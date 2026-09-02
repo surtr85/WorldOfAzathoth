@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://pride_palace_001"]
+
+[node name="PridePalace" type="Node2D"]
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Environment"]
+collision_layer = 4
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Environment/StaticBody2D"]
+polygon = PackedVector2Array(-500, 500, 2500, 500, 2500, 600, -500, 600)

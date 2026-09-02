@@ -1,4 +1,3 @@
-class_name DreamState
 extends Node
 ## Manages surreal physics, dream distortions, and reality glitches.
 
@@ -36,6 +35,6 @@ func clear_anomalies() -> void:
 	active_anomalies.clear()
 
 func _roll_anomaly() -> void:
-	var types := ["floating_eye", "gravity_flip", "disappearing_door", "whispering_walls", "shadow_duplicate"]
-	var selected := types[randi() % types.size()]
+	var types: Array[String] = ["floating_eye", "gravity_flip", "disappearing_door", "whispering_walls", "shadow_duplicate"]
+	var selected: String = types[randi() % types.size()]
 	register_anomaly(selected)

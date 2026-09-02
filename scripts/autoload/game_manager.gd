@@ -1,4 +1,3 @@
-class_name GameManager
 extends Node
 ## Global game state manager for World of Azathoth.
 

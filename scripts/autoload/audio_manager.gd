@@ -1,4 +1,3 @@
-class_name AudioManager
 extends Node
 ## Audio manager supporting crossfading music and positional SFX.
 
