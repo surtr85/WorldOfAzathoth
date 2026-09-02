@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://pride_palace_entrance_001"]
+[gd_scene load_steps=8 format=3 uid="uid://pride_palace_entrance_001"]
 
 [ext_resource type="Script" path="res://scripts/systems/door.gd" id="1_door"]
 [ext_resource type="Script" path="res://scripts/systems/dialogue_trigger.gd" id="2_dialogue"]
@@ -10,12 +10,31 @@ size = Vector2(2400, 60)
 [sub_resource type="RectangleShape2D" id="2"]
 size = Vector2(40, 100)
 
+[sub_resource type="Gradient" id="Gradient_ground"]
+colors = PackedColorArray(0.2, 0.2, 0.3, 1, 0.2, 0.2, 0.3, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ground"]
+gradient = SubResource("Gradient_ground")
+width = 2400
+height = 60
+
+[sub_resource type="Gradient" id="Gradient_enemy"]
+colors = PackedColorArray(0.8, 0.1, 0.8, 1, 0.8, 0.1, 0.8, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_enemy"]
+gradient = SubResource("Gradient_enemy")
+width = 32
+height = 32
+
 [node name="PridePalaceEntrance" type="Node2D"]
 
 [node name="Environment" type="Node2D" parent="."]
 
 [node name="Ground" type="StaticBody2D" parent="Environment"]
 position = Vector2(1000, 600)
+
+[node name="Sprite2D" type="Sprite2D" parent="Environment/Ground"]
+texture = SubResource("GradientTexture2D_ground")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground"]
 shape = SubResource("1")
@@ -47,3 +66,6 @@ text_lines = PackedStringArray("You step into the Palace of Pride...", "The gold
 [node name="Dreamling1" type="CharacterBody2D" parent="Enemies"]
 position = Vector2(800, 540)
 script = ExtResource("3_enemy")
+
+[node name="Sprite2D" type="Sprite2D" parent="Enemies/Dreamling1"]
+texture = SubResource("GradientTexture2D_enemy")

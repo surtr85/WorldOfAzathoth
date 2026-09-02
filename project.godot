@@ -4,8 +4,8 @@ config_version=5
 
 config/name="World of Azathoth"
 config/description="Dark Surreal Metroidvania Action-Adventure"
-run/main_scene="res://scenes/levels/pride_palace/pride_palace.tscn"
-config/features=PackedStringArray("4.4", "Forward Plus")
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -26,7 +26,8 @@ window/stretch/aspect="keep"
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
-renderer/rendering_method="forward_plus"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 
 [layer_names]
 
