@@ -62,10 +62,10 @@ var is_dead: bool = false
 var base_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 # --- Node References ---
-@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var hitbox: Area2D = $Hitbox
-@onready var detection_area: Area2D = $DetectionArea
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D if has_node("AnimatedSprite2D") else null
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D if has_node("CollisionShape2D") else null
+@onready var hitbox: Area2D = $Hitbox if has_node("Hitbox") else null
+@onready var detection_area: Area2D = $DetectionArea if has_node("DetectionArea") else null
 
 
 func _ready() -> void:
@@ -141,13 +141,13 @@ func _state_idle(delta: float) -> void:
 
 
 func _state_patrol(delta: float) -> void:
-	var dir_to_target := sign(patrol_target.x - global_position.x)
-	facing = dir_to_target
+	var dir_to_target: float = sign(patrol_target.x - global_position.x)
+	facing = int(dir_to_target)
 	velocity.x = dir_to_target * move_speed
 
 	if abs(global_position.x - patrol_target.x) < 10:
 		# Swap patrol targets
-		var temp := patrol_target
+		var temp: Vector2 = patrol_target
 		patrol_target = patrol_origin
 		patrol_origin = temp
 		patrol_timer = patrol_wait_time
@@ -162,8 +162,8 @@ func _state_chase(delta: float) -> void:
 		_change_state(EnemyState.PATROL)
 		return
 
-	var dir := sign(player.global_position.x - global_position.x)
-	facing = dir
+	var dir: float = sign(player.global_position.x - global_position.x)
+	facing = int(dir)
 	velocity.x = dir * chase_speed
 
 	if _distance_to_player() < attack_range and attack_timer <= 0:
@@ -226,14 +226,18 @@ func die() -> void:
 	_play_death_effect()
 
 	# Disable collision
-	collision_shape.set_deferred("disabled", true)
+	if collision_shape:
+		collision_shape.set_deferred("disabled", true)
 	if hitbox:
 		hitbox.set_deferred("monitoring", false)
 
 	# Fade out and free
-	var tween := create_tween()
-	tween.tween_property(sprite, "modulate:a", 0.0, 0.5)
-	tween.tween_callback(queue_free)
+	if sprite:
+		var tween := create_tween()
+		tween.tween_property(sprite, "modulate:a", 0.0, 0.5)
+		tween.tween_callback(queue_free)
+	else:
+		queue_free()
 
 
 ## Override for custom attack behavior
@@ -266,12 +270,12 @@ func _setup_detection_area() -> void:
 
 
 func _on_detection_body_entered(body: Node2D) -> void:
-	if body is PlayerController:
-		player = body
+	if body.is_in_group("player") or body.name.to_lower().contains("player"):
+		player = body as CharacterBody2D
 
 
 func _on_detection_body_exited(body: Node2D) -> void:
-	if body is PlayerController:
+	if body.is_in_group("player") or body.name.to_lower().contains("player"):
 		player = null
 
 
@@ -307,6 +311,7 @@ func _update_animations() -> void:
 # === HITBOX ===
 
 func _on_hitbox_body_entered(body: Node2D) -> void:
-	if body is PlayerController:
+	if body.is_in_group("player") or body.name.to_lower().contains("player"):
 		var kb_dir := (body.global_position - global_position).normalized()
-		body.take_damage(contact_damage, kb_dir)
+		if body.has_method("take_damage"):
+			body.take_damage(contact_damage, kb_dir)

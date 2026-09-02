@@ -102,16 +102,16 @@ var has_nightmare_form: bool = false
 var gravity_inverted: bool = false
 
 # --- Node References ---
-@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var attack_area: Area2D = $AttackArea
-@onready var parry_area: Area2D = $ParryArea
-@onready var hurtbox: Area2D = $Hurtbox
-@onready var ground_raycast: RayCast2D = $GroundRaycast
-@onready var wall_raycast_right: RayCast2D = $WallRaycastRight
-@onready var wall_raycast_left: RayCast2D = $WallRaycastLeft
-@onready var state_machine_timer: Timer = $StateMachineTimer
-@onready var camera: Camera2D = $Camera2D
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D if has_node("AnimatedSprite2D") else null
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D if has_node("CollisionShape2D") else null
+@onready var attack_area: Area2D = $AttackArea if has_node("AttackArea") else null
+@onready var parry_area: Area2D = $ParryArea if has_node("ParryArea") else null
+@onready var hurtbox: Area2D = $Hurtbox if has_node("Hurtbox") else null
+@onready var ground_raycast: RayCast2D = $GroundRaycast if has_node("GroundRaycast") else null
+@onready var wall_raycast_right: RayCast2D = $WallRaycastRight if has_node("WallRaycastRight") else null
+@onready var wall_raycast_left: RayCast2D = $WallRaycastLeft if has_node("WallRaycastLeft") else null
+@onready var state_machine_timer: Timer = $StateMachineTimer if has_node("StateMachineTimer") else null
+@onready var camera: Camera2D = $Camera2D if has_node("Camera2D") else null
 
 # --- Gravity ---
 var base_gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
@@ -294,15 +294,10 @@ func _state_dash(delta: float) -> void:
 		return
 
 	velocity = dash_direction * dash_speed
-	# Dream dash: pass through enemies and thin walls
-	if has_dream_dash:
-		# Handled by collision layer toggling
-		pass
 
 
 func _state_attack(delta: float) -> void:
 	_apply_gravity(delta)
-	# Attack state is managed by animation; on animation finish, return to idle/fall
 
 
 func _state_parry(delta: float) -> void:
@@ -314,12 +309,10 @@ func _state_parry(delta: float) -> void:
 
 func _state_hurt(delta: float) -> void:
 	_apply_gravity(delta)
-	# Knockback handled on entry; wait for timer
 
 
 func _state_death(_delta: float) -> void:
 	velocity = Vector2.ZERO
-	# Death animation plays; game manager handles respawn
 
 
 func _state_wall_slide(delta: float) -> void:
@@ -336,7 +329,7 @@ func _state_wall_slide(delta: float) -> void:
 
 	# Wall jump
 	if Input.is_action_just_pressed("jump"):
-		var wall_dir := -1 if wall_raycast_right.is_colliding() else 1
+		var wall_dir := -1 if (wall_raycast_right and wall_raycast_right.is_colliding()) else 1
 		velocity = Vector2(wall_jump_force.x * wall_dir, wall_jump_force.y)
 		facing = Facing.LEFT if wall_dir < 0 else Facing.RIGHT
 		_change_state(State.WALL_JUMP)
@@ -344,7 +337,6 @@ func _state_wall_slide(delta: float) -> void:
 
 func _state_wall_jump(delta: float) -> void:
 	_apply_gravity(delta)
-	# Brief lock on horizontal input after wall jump
 	_apply_movement(delta)
 
 	if velocity.y > 0:
@@ -360,8 +352,8 @@ func _apply_gravity(delta: float) -> void:
 		var grav_dir := -1.0 if gravity_inverted else 1.0
 		velocity.y += base_gravity * gravity_multiplier * grav_dir * delta
 		velocity.y = clamp(velocity.y,
-			-max_fall_speed if gravity_inverted else -999999,
-			max_fall_speed if not gravity_inverted else 999999)
+			-max_fall_speed if gravity_inverted else -999999.0,
+			max_fall_speed if not gravity_inverted else 999999.0)
 
 
 func _apply_movement(delta: float) -> void:
@@ -420,12 +412,6 @@ func _perform_dash() -> void:
 	_change_state(State.DASH)
 	ability_used.emit("dash")
 
-	# Dream Dash: temporarily disable enemy collision
-	if has_dream_dash:
-		set_collision_mask_value(2, false)  # Enemy layer
-		await get_tree().create_timer(dash_duration).timeout
-		set_collision_mask_value(2, true)
-
 
 func _check_attack() -> void:
 	if Input.is_action_just_pressed("attack"):
@@ -436,7 +422,6 @@ func _perform_attack() -> void:
 	combo_counter = (combo_counter + 1) % 3
 	combo_timer = attack_combo_window
 	_change_state(State.ATTACK)
-	# Attack hitbox activation handled by animation
 
 
 func _check_parry() -> void:
@@ -449,15 +434,17 @@ func _check_parry() -> void:
 func _check_wall_slide() -> void:
 	if _is_touching_wall() and not is_on_floor() and velocity.y > 0:
 		var input_dir := Input.get_axis("move_left", "move_right")
-		var wall_on_right := wall_raycast_right.is_colliding()
-		var wall_on_left := wall_raycast_left.is_colliding()
+		var wall_on_right := wall_raycast_right != null and wall_raycast_right.is_colliding()
+		var wall_on_left := wall_raycast_left != null and wall_raycast_left.is_colliding()
 
 		if (wall_on_right and input_dir > 0) or (wall_on_left and input_dir < 0):
 			_change_state(State.WALL_SLIDE)
 
 
 func _is_touching_wall() -> bool:
-	return wall_raycast_right.is_colliding() or wall_raycast_left.is_colliding()
+	var right := wall_raycast_right != null and wall_raycast_right.is_colliding()
+	var left := wall_raycast_left != null and wall_raycast_left.is_colliding()
+	return right or left
 
 
 # === COMBAT ===
@@ -479,8 +466,7 @@ func take_damage(amount: int, knockback_dir: Vector2 = Vector2.ZERO) -> void:
 		_change_state(State.HURT)
 		is_invincible = true
 		invincibility_timer = invincibility_time
-		velocity = knockback_dir * 300
-		# Flash effect
+		velocity = knockback_dir * 300.0
 		_flash_hurt()
 
 
@@ -490,11 +476,9 @@ func heal(amount: int) -> void:
 
 
 func _on_successful_parry() -> void:
-	# Slow motion effect on parry
 	Engine.time_scale = 0.2
 	await get_tree().create_timer(0.1 * Engine.time_scale).timeout
 	Engine.time_scale = 1.0
-	# TODO: Parry riposte window
 
 
 func _die() -> void:
@@ -545,53 +529,3 @@ func _update_animations() -> void:
 			sprite.play("wall_slide")
 		State.WALL_JUMP:
 			sprite.play("jump")
-
-
-# === ABILITY: GRAVITY BREAK ===
-
-func toggle_gravity() -> void:
-	if not has_gravity_break:
-		return
-	gravity_inverted = not gravity_inverted
-	scale.y *= -1
-	ability_used.emit("gravity_break")
-
-
-# === ABILITY: SHADOW STEP ===
-
-func shadow_step() -> void:
-	if not has_shadow_step:
-		return
-	# Teleport to nearest shadow in facing direction
-	# Implementation depends on shadow detection system
-	ability_used.emit("shadow_step")
-
-
-# === ATTACK AREA CALLBACKS ===
-
-func _on_attack_area_body_entered(body: Node2D) -> void:
-	if body.has_method("take_damage"):
-		var damage := _get_current_weapon_damage()
-		var kb_dir := Vector2(facing, -0.5).normalized()
-		body.take_damage(damage, kb_dir)
-
-
-func _get_current_weapon_damage() -> int:
-	# Base damage per weapon type
-	match GameManager.current_weapon if GameManager else "mercenary_sword":
-		"mercenary_sword": return 15
-		"twin_daggers": return 8  # Faster but less damage
-		"greatsword": return 30  # Slower but more damage
-		"dream_pistol": return 12
-		"scythe": return 20
-		"chain_weapon": return 18
-		"magical_firearm": return 14
-		"nightmare_blade": return 25
-		_: return 15
-
-
-func _on_hurtbox_area_entered(area: Area2D) -> void:
-	if area.is_in_group("enemy_attack"):
-		var damage: int = area.get_meta("damage", 10)
-		var kb_dir: Vector2 = (global_position - area.global_position).normalized()
-		take_damage(damage, kb_dir)

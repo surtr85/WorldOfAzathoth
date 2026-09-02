@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://main_game_scene_000"]
+
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/levels/pride_palace/pride_palace.tscn" id="2_level"]
+
+[sub_resource type="RectangleShape2D" id="1"]
+size = Vector2(32, 64)
+
+[node name="MainGame" type="Node2D"]
+
+[node name="CurrentLevel" type="Node2D" parent="."]
+
+[node name="PridePalaceEntrance" parent="CurrentLevel" instance=ExtResource("2_level")]
+
+[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+position = Vector2(200, 520)
+script = ExtResource("1_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("1")
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+position_smoothing_enabled = true

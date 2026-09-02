@@ -20,8 +20,8 @@ func _on_ready() -> void:
 func _perform_attack() -> void:
 	# Simple lunge attack
 	if player:
-		var dir := sign(player.global_position.x - global_position.x)
-		velocity.x = dir * 300  # Lunge
+		var dir: float = sign(player.global_position.x - global_position.x)
+		velocity.x = dir * 300.0  # Lunge
 	attack_timer = attack_cooldown
 	await get_tree().create_timer(0.3).timeout
 	if not is_dead:

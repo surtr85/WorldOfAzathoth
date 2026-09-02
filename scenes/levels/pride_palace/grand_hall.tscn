@@ -1,0 +1,53 @@
+[gd_scene load_steps=4 format=3 uid="uid://pride_palace_grand_hall_002"]
+
+[ext_resource type="Script" path="res://scripts/systems/door.gd" id="1_door"]
+[ext_resource type="Script" path="res://scripts/systems/collectible_item.gd" id="2_item"]
+[ext_resource type="Script" path="res://scripts/enemies/mirror_husk.gd" id="3_husk"]
+
+[sub_resource type="RectangleShape2D" id="1"]
+size = Vector2(3000, 60)
+
+[node name="GrandHall" type="Node2D"]
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="Ground" type="StaticBody2D" parent="Environment"]
+position = Vector2(1500, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground"]
+shape = SubResource("1")
+
+[node name="Doors" type="Node2D" parent="."]
+
+[node name="DoorToEntrance" type="Area2D" parent="Doors"]
+position = Vector2(100, 520)
+script = ExtResource("1_door")
+target_scene = "res://scenes/levels/pride_palace/pride_palace.tscn"
+door_id = "grand_hall_west"
+
+[node name="DoorToBossAntechamber" type="Area2D" parent="Doors"]
+position = Vector2(2800, 520)
+script = ExtResource("1_door")
+target_scene = "res://scenes/levels/pride_palace/boss_antechamber.tscn"
+door_id = "grand_hall_east"
+is_locked = true
+required_key = "golden_key"
+
+[node name="Items" type="Node2D" parent="."]
+
+[node name="GoldenKey" type="Area2D" parent="Items"]
+position = Vector2(1500, 540)
+script = ExtResource("2_item")
+item_type = 2
+item_id = "golden_key"
+item_name = "Golden King's Key"
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="MirrorHusk1" type="CharacterBody2D" parent="Enemies"]
+position = Vector2(1000, 540)
+script = ExtResource("3_husk")
+
+[node name="MirrorHusk2" type="CharacterBody2D" parent="Enemies"]
+position = Vector2(2000, 540)
+script = ExtResource("3_husk")

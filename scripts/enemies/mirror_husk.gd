@@ -14,8 +14,8 @@ func _on_ready() -> void:
 	max_health = 40
 	health = max_health
 	contact_damage = 12
-	move_speed = 0  # Moves based on recorded inputs
-	chase_speed = 0
+	move_speed = 0.0  # Moves based on recorded inputs
+	chase_speed = 0.0
 	detection_range = 350.0
 	attack_range = 80.0
 	is_innocent = false
@@ -34,7 +34,7 @@ func _state_chase(delta: float) -> void:
 		recorded_inputs.append({
 			"velocity": player.velocity,
 			"position": player.global_position,
-			"facing": player.facing,
+			"facing": player.facing if "facing" in player else 1,
 		})
 		if recorded_inputs.size() > max_recorded:
 			recorded_inputs.pop_front()
@@ -43,8 +43,9 @@ func _state_chase(delta: float) -> void:
 	var delay_frames := int(playback_delay * 60)
 	if recorded_inputs.size() > delay_frames:
 		var replay: Dictionary = recorded_inputs[recorded_inputs.size() - delay_frames]
-		velocity.x = replay.velocity.x * 0.8  # Slightly slower
-		facing = replay.facing
+		var replay_vel: Vector2 = replay.get("velocity", Vector2.ZERO)
+		velocity.x = replay_vel.x * 0.8  # Slightly slower
+		facing = int(replay.get("facing", 1))
 
 	if _distance_to_player() < attack_range and attack_timer <= 0:
 		_change_state(EnemyState.ATTACK)
@@ -53,8 +54,8 @@ func _state_chase(delta: float) -> void:
 func _perform_attack() -> void:
 	# Mirror the player's last attack direction
 	if player:
-		var dir := sign(player.global_position.x - global_position.x)
-		velocity.x = dir * 200
+		var dir: float = sign(player.global_position.x - global_position.x)
+		velocity.x = dir * 200.0
 	attack_timer = 1.2
 	await get_tree().create_timer(0.4).timeout
 	if not is_dead:

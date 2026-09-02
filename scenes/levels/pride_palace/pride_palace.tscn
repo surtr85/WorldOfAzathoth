@@ -1,48 +1,49 @@
-[gd_scene load_steps=4 format=3 uid="uid://pride_palace_001"]
+[gd_scene load_steps=5 format=3 uid="uid://pride_palace_entrance_001"]
 
-[ext_resource type="Shader" path="res://assets/shaders/van_gogh_sky.gdshader" id="1_sky_shader"]
-[ext_resource type="PackedScene" uid="uid://hud_scene_001" path="res://scenes/ui/hud.tscn" id="2_hud"]
+[ext_resource type="Script" path="res://scripts/systems/door.gd" id="1_door"]
+[ext_resource type="Script" path="res://scripts/systems/dialogue_trigger.gd" id="2_dialogue"]
+[ext_resource type="Script" path="res://scripts/enemies/dreamling.gd" id="3_enemy"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_sky"]
-shader = ExtResource("1_sky_shader")
-shader_parameter/sky_color = Color(0.05, 0.05, 0.2, 1)
-shader_parameter/swirl_color1 = Color(0.2, 0.4, 0.8, 1)
-shader_parameter/swirl_color2 = Color(0.9, 0.8, 0.3, 1)
-shader_parameter/swirl_speed = 0.5
-shader_parameter/swirl_scale = 15.0
+[sub_resource type="RectangleShape2D" id="1"]
+size = Vector2(2400, 60)
 
-[node name="PridePalace" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="2"]
+size = Vector2(40, 100)
 
-[node name="HUD" parent="." instance=ExtResource("2_hud")]
-
-[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
-
-[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBackground"]
-motion_scale = Vector2(0.1, 0.1)
-
-[node name="ColorRect" type="ColorRect" parent="ParallaxBackground/SkyLayer"]
-material = SubResource("ShaderMaterial_sky")
-offset_right = 1920.0
-offset_bottom = 1080.0
+[node name="PridePalaceEntrance" type="Node2D"]
 
 [node name="Environment" type="Node2D" parent="."]
 
-[node name="MainFloor" type="StaticBody2D" parent="Environment"]
-collision_layer = 4
+[node name="Ground" type="StaticBody2D" parent="Environment"]
+position = Vector2(1000, 600)
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Environment/MainFloor"]
-polygon = PackedVector2Array(-500, 800, 2500, 800, 2500, 900, -500, 900)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground"]
+shape = SubResource("1")
 
-[node name="FloatingPlatform1" type="StaticBody2D" parent="Environment"]
-position = Vector2(400, 600)
-collision_layer = 4
+[node name="Platform1" type="StaticBody2D" parent="Environment"]
+position = Vector2(400, 480)
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Environment/FloatingPlatform1"]
-polygon = PackedVector2Array(-100, 0, 100, 0, 100, 30, -100, 30)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Platform1"]
+shape = SubResource("2")
 
-[node name="FloatingPlatform2" type="StaticBody2D" parent="Environment"]
-position = Vector2(800, 450)
-collision_layer = 4
+[node name="Doors" type="Node2D" parent="."]
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Environment/FloatingPlatform2"]
-polygon = PackedVector2Array(-100, 0, 100, 0, 100, 30, -100, 30)
+[node name="DoorToGrandHall" type="Area2D" parent="Doors"]
+position = Vector2(1800, 520)
+script = ExtResource("1_door")
+target_scene = "res://scenes/levels/pride_palace/grand_hall.tscn"
+door_id = "entrance_east"
+
+[node name="Triggers" type="Node2D" parent="."]
+
+[node name="IntroDialogue" type="Area2D" parent="Triggers"]
+position = Vector2(300, 520)
+script = ExtResource("2_dialogue")
+speaker_name = "Echo of Azathoth"
+text_lines = PackedStringArray("You step into the Palace of Pride...", "The golden walls bleed with forgotten memories.")
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Dreamling1" type="CharacterBody2D" parent="Enemies"]
+position = Vector2(800, 540)
+script = ExtResource("3_enemy")
