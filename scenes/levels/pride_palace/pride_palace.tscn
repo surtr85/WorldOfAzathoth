@@ -1,30 +1,49 @@
-[gd_scene load_steps=8 format=3 uid="uid://pride_palace_entrance_001"]
+[gd_scene load_steps=12 format=3 uid="uid://pride_palace_entrance_001"]
 
 [ext_resource type="Script" path="res://scripts/systems/door.gd" id="1_door"]
 [ext_resource type="Script" path="res://scripts/systems/dialogue_trigger.gd" id="2_dialogue"]
 [ext_resource type="Script" path="res://scripts/enemies/dreamling.gd" id="3_enemy"]
+[ext_resource type="Texture2D" path="res://assets/sprites/enemies/dreamling_sheet.png" id="4_dreamling_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tilesets/pride_palace_tileset.png" id="5_tileset_tex"]
 
 [sub_resource type="RectangleShape2D" id="1"]
 size = Vector2(2400, 60)
 
 [sub_resource type="RectangleShape2D" id="2"]
-size = Vector2(40, 100)
+size = Vector2(100, 100)
 
-[sub_resource type="Gradient" id="Gradient_ground"]
-colors = PackedColorArray(0.2, 0.2, 0.3, 1, 0.2, 0.2, 0.3, 1)
+[sub_resource type="AtlasTexture" id="AtlasTexture_enemy0"]
+atlas = ExtResource("4_dreamling_tex")
+region = Rect2(0, 0, 32, 32)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_ground"]
-gradient = SubResource("Gradient_ground")
-width = 2400
-height = 60
+[sub_resource type="AtlasTexture" id="AtlasTexture_enemy1"]
+atlas = ExtResource("4_dreamling_tex")
+region = Rect2(32, 0, 32, 32)
 
-[sub_resource type="Gradient" id="Gradient_enemy"]
-colors = PackedColorArray(0.8, 0.1, 0.8, 1, 0.8, 0.1, 0.8, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_enemy"]
-gradient = SubResource("Gradient_enemy")
-width = 32
-height = 32
+[sub_resource type="SpriteFrames" id="SpriteFrames_dreamling"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_enemy0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_enemy1")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_enemy0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_enemy1")
+}],
+"loop": true,
+"name": &"run",
+"speed": 6.0
+}]
 
 [node name="PridePalaceEntrance" type="Node2D"]
 
@@ -34,13 +53,21 @@ height = 32
 position = Vector2(1000, 600)
 
 [node name="Sprite2D" type="Sprite2D" parent="Environment/Ground"]
-texture = SubResource("GradientTexture2D_ground")
+texture = ExtResource("5_tileset_tex")
+region_enabled = true
+region_rect = Rect2(0, 0, 2400, 60)
+region_filter_clip_enabled = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground"]
 shape = SubResource("1")
 
 [node name="Platform1" type="StaticBody2D" parent="Environment"]
 position = Vector2(400, 480)
+
+[node name="Sprite2D" type="Sprite2D" parent="Environment/Platform1"]
+texture = ExtResource("5_tileset_tex")
+region_enabled = true
+region_rect = Rect2(0, 0, 100, 100)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Platform1"]
 shape = SubResource("2")
@@ -67,5 +94,7 @@ text_lines = PackedStringArray("You step into the Palace of Pride...", "The gold
 position = Vector2(800, 540)
 script = ExtResource("3_enemy")
 
-[node name="Sprite2D" type="Sprite2D" parent="Enemies/Dreamling1"]
-texture = SubResource("GradientTexture2D_enemy")
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Enemies/Dreamling1"]
+sprite_frames = SubResource("SpriteFrames_dreamling")
+animation = &"idle"
+autoplay = "idle"
